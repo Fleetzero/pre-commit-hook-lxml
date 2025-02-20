@@ -108,6 +108,7 @@ The CLI options can be used from the YAML pre-commit configuration, using the
     quotes.
 + `-l` or `--log-level` is the log level. One of `DEBUG`, `INFO`, `WARNING`,
   `ERROR` or `CRITICAL`.
++ `-t` or `--sort` tells the hook implementation to sort the XML based on attributes alphabetical order before outputting the strings.
 + `-w` or `--write` tells the hook implementation to write the changes to the
   files. This is automatically turned on from the
   [default](./.pre-commit-hooks.yaml) `args`.
