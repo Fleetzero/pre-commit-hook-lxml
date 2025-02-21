@@ -13,7 +13,7 @@
     + Remove blank lines
   entry: lxml_format
   language: python
-  types: [xml]
+  files: \.drawio$
   stages:
     - pre-commit
     - pre-merge-commit
