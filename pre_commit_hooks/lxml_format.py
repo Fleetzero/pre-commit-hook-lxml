@@ -20,7 +20,6 @@ def pretty_print(
     space: str = ' ',
     indent: int = INDENT,
     declaration: bool = True,
-    sort: bool = False,
 ) -> bytes:
     """
     Pretty prints an XML content with specified indentation. Results are per
@@ -42,17 +41,35 @@ def pretty_print(
     tree = etree.XML(content, parser=parser)
     root_tree = tree.getroottree()
     etree.indent(root_tree, space=space * indent)
-    if sort:
-        for elem in tree.iter():
-            if elem.attrib:  # Only sort if there are attributes
-                sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
-                elem.attrib.clear()
-                # Update in-place (avoids extra dict)
-                elem.attrib.update(sorted_attrs)
     return etree.tostring(
         root_tree,
         pretty_print=True,
         encoding=root_tree.docinfo.encoding,
+        standalone=root_tree.docinfo.standalone,
+        xml_declaration=declaration,
+    )
+
+
+def sort_xml(
+    content: bytes,
+    declaration: bool = True,
+):
+    parser = etree.XMLParser(remove_blank_text=False,
+                             recover=True, strip_cdata=False)
+    tree = etree.XML(content, parser=parser)
+
+    for elem in tree.iter():
+        if elem.attrib:  # Only sort if there are attributes
+            sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
+            elem.attrib.clear()
+            # Update in-place (avoids extra dict)
+            elem.attrib.update(sorted_attrs)
+
+    root_tree = tree.getroottree()
+    return etree.tostring(
+        root_tree,
+        encoding=root_tree.docinfo.encoding,
+        standalone=root_tree.docinfo.standalone,
         xml_declaration=declaration,
     )
 
@@ -134,15 +151,19 @@ def beautify(
     absence = re.compile(r'^\s*(false|off|no|0|f|n)\s*$', re.IGNORECASE)
     xml_declaration = not absence.match(declaration)
 
+    # Sort the XML file if requested
+    if sort:
+        content = sort_xml(original, xml_declaration)
+    else:
+        content = original
+
     # Pretty print the content until it has not changed between two iterations.
-    content = original
     for _ in range(retries):
         xml = pretty_print(
-            original,
+            content,
             space=space,
             indent=indent,
             declaration=xml_declaration,
-            sort=sort,
         )
         if xml == content:
             break
