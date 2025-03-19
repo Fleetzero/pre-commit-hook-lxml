@@ -52,7 +52,7 @@ def pretty_print(
 
 def sort_xml(
     content: bytes,
-    sort_tags: bool = True,
+    sort_elements_together: bool = True,
     declaration: bool = True,
 ):
     parser = etree.XMLParser(remove_blank_text=False,
@@ -60,8 +60,11 @@ def sort_xml(
     tree = etree.XML(content, parser=parser)
 
     def sort_elements(parent):
-        if sort_tags:
-            parent[:] = sorted(parent, key=lambda e: e.tag)
+        # If sort_elements_together true, not only sort elements attributes, but also the elements themselves
+        if sort_elements_together:
+            # Key is a tuple, so if e.tag is the same, it will sort by the elements attributes
+            parent[:] = sorted(parent, key=lambda e: (
+                e.tag, sorted(e.attrib.items())))
         for elem in parent:
             if elem.attrib:  # Only sort if there are attributes
                 sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
