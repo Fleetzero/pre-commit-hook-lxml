@@ -62,9 +62,8 @@ def sort_xml(
     def sort_elements(parent):
         # If sort_elements_together true, not only sort elements attributes, but also the elements themselves
         if sort_elements_together:
-            # Key is a tuple, so if e.tag is the same, it will sort by the elements attributes
-            parent[:] = sorted(parent, key=lambda e: (
-                e.tag, sorted(e.attrib.items())))
+            # Sorting elements based on tag name
+            parent[:] = sorted(parent, key=lambda e: e.tag)
         for elem in parent:
             if elem.attrib:  # Only sort if there are attributes
                 sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
