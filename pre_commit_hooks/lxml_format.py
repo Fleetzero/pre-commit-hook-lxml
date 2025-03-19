@@ -52,18 +52,25 @@ def pretty_print(
 
 def sort_xml(
     content: bytes,
+    sort_tags: bool = True,
     declaration: bool = True,
 ):
     parser = etree.XMLParser(remove_blank_text=False,
                              recover=True, strip_cdata=False)
     tree = etree.XML(content, parser=parser)
 
-    for elem in tree.iter():
-        if elem.attrib:  # Only sort if there are attributes
-            sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
-            elem.attrib.clear()
-            # Update in-place (avoids extra dict)
-            elem.attrib.update(sorted_attrs)
+    def sort_elements(parent):
+        if sort_tags:
+            parent[:] = sorted(parent, key=lambda e: e.tag)
+        for elem in parent:
+            if elem.attrib:  # Only sort if there are attributes
+                sorted_attrs = sorted(elem.attrib.items())  # Efficient sorting
+                elem.attrib.clear()
+                # Update in-place (avoids extra dict)
+                elem.attrib.update(sorted_attrs)
+            sort_elements(elem)
+
+    sort_elements(tree)
 
     root_tree = tree.getroottree()
     return etree.tostring(
